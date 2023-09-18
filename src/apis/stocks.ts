@@ -1,15 +1,49 @@
 /* tslint:disable:no-magic-numbers */
 
+export type StockEndpoint =
+  | 'book'
+  | 'chart'
+  | 'company'
+  | 'delayed-quote'
+  | 'dividends'
+  | 'earnings'
+  | 'effective-spread'
+  | 'financials'
+  | 'threshold-securities'
+  | 'short-interest'
+  | 'stats'
+  | 'largest-trades'
+  | 'logo'
+  | 'news'
+  | 'ohlc'
+  | 'peers'
+  | 'previous'
+  | 'price'
+  | 'quote'
+  | 'relevant'
+  | 'splits'
+  | 'volume-by-venue'
+  | string
+
+/**
+ * IEX Primary Exchanges
+ */
+export enum PrimaryExchange {
+  OTC = 'US OTC',
+  NYSE = 'New York Stock Exchange',
+  NASDAQ = 'NASDAQ'
+}
+
 export interface QuoteResponse {
   symbol: string
   companyName: string
-  primaryExchange: string
-  sector: string
   calculationPrice: 'tops' | 'sip' | 'previousClose' | 'close'
   open: number
   openTime: number
   close: number
   closeTime: number
+  high: number
+  low: number
   latestPrice: number
   latestSource: 'IEX real time price' | '15 minute delayed price' | 'Close' | 'Previous close'
   latestTime: string
@@ -20,6 +54,10 @@ export interface QuoteResponse {
   iexLastUpdated: number
   delayedPrice: number
   delayedPriceTime: number
+  extendedPrice: number
+  extendedChange: number
+  extendedChangePercent: number
+  extendedPriceTime: number
   previousClose: number
   change: number
   changePercent: number
@@ -31,10 +69,10 @@ export interface QuoteResponse {
   iexAskPrice: number
   iexAskSize: number
   marketCap: number
-  peRatio: number | null
   week52High: number
   week52Low: number
   ytdChange: number
+  primaryExchange: PrimaryExchange
 }
 
 /**
@@ -42,34 +80,41 @@ export interface QuoteResponse {
  * There's no way to express 'date/<YYYYMMDD>' as a type outside of a generic
  * catch-all string.
  */
-export type ChartRangeOption = '5y' | '2y' | '1y' | 'ytd' | '6m' | '3m' | '1m' | '1d' | 'dynamic' | string
+export type ChartRangeOption = '5y' | '2y' | '1y' | 'ytd' | '6m' | '3m' | '1m' | '1d' | 'dynamic' | 'date' | string
+
+export interface ChartParams {
+  chartReset?: boolean
+  chartSimplify?: boolean
+  chartInterval?: number
+  changeFromClose?: boolean
+  chartLast?: number
+  chartCloseOnly?: boolean
+  range?: ChartRangeOption
+  chartByDay?: boolean
+  exactDate?: string
+}
 
 export interface ChartItem {
-  high: number
-  low: number
-  volume: number
-  label: number
-  changeOverTime: number
-}
-
-export interface OneDayChartItem extends ChartItem {
-  minute: string
-  average: number
-  notional: number
-  numberOfTrades: number
-}
-
-export interface MultiDayChartItem extends ChartItem {
-  date: string
-  open: number
-  close: number
-  unadjustedVolume: number
   change: number
+  changeOverTime: number
   changePercent: number
-  vwap: number
+  close: number
+  date: string
+  high: number
+  label: string
+  low: number
+  open: number
+  volume: number
 }
 
-export type ChartResponse = OneDayChartItem[] | MultiDayChartItem[]
+// Not currently supported
+export interface CloseOnlyChartItem {
+  date: string
+  close: number
+  volume: number
+}
+
+export type ChartResponse = ChartItem[]
 
 export interface OpenCloseResponse {
   open: {
@@ -94,11 +139,28 @@ export interface OpenCloseResponse {
  * et – Exchange Traded Fund (ETF)
  * (blank) = Not Available, i.e., Warrant, Note, or (non-filing) Closed Ended Funds
  */
-export type IssueType = 'ad' | 're' | 'ce' | 'si' | 'lp' | 'cs' | 'et' | ''
+export type IssueType = 'ad' | 're' | 'ce' | 'si' | 'lp' | 'cs' | 'et' | '' | 'ps'
+
+/**
+ * IEX Languages
+ */
+export enum Language {
+  EN = 'en',
+  PT = 'pt',
+  FR = 'fr',
+  DE = 'de'
+}
+
+export type IexLanguage =
+  | Language.EN
+  | Language.PT
+  | Language.FR
+  | Language.DE
 
 export interface CompanyResponse {
   symbol: string
   companyName: string
+  employees: number
   exchange: string
   industry: string
   website: string
@@ -143,12 +205,15 @@ export interface FinancialsResponse {
 }
 
 export interface News {
-  datetime: string
+  datetime: number
   headline: string
   source: string
   url: string
   summary: string
   related: string
+  image: string
+  lang: IexLanguage
+  hasPaywall: boolean
 }
 
 export type NewsRange = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 |
@@ -159,13 +224,13 @@ export type NewsRange = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 |
 export type SplitRange = '5y' | '2y' | '1y' | 'ytd' | '6m' | '3m' | '1m'
 
 export interface Split {
-exDate: string
-declaredDate: string
-recordDate: string
-paymentDate: string
-ratio: number
-toFactor: number // TODO: API docs say string, but this looks to actually be a number
-forFactor: number // TODO: API docs say string, but this looks to actually be a number
+  exDate: string
+  declaredDate: string
+  recordDate: string
+  paymentDate: string
+  ratio: number
+  toFactor: number // TODO: API docs say string, but this looks to actually be a number
+  forFactor: number // TODO: API docs say string, but this looks to actually be a number
 }
 
 export interface LogoResponse {
@@ -174,46 +239,27 @@ export interface LogoResponse {
 
 export interface KeyStatsResponse {
   companyName: string
-  marketCap: number
-  beta: number
+  marketcap: number
   week52high: number
   week52low: number
   week52change: number
-  shortInterest: number
-  shortDate: string
-  dividendRate: number
-  dividendYield: number
-  exDividendDate: string
-  latestEPS: number
-  latestEPSDate: string
   sharesOutstanding: number
   float: number
-  returnOnEquity: number
-  consensusEPS: number
-  numberOfEstimates: number
   symbol: string
-  EBITDA: number
-  revenue: number
-  grossProfit: number
-  cash: number
-  debt: number
-  ttmEPS: number
-  revenuePerShare: number
-  revenuePerEmployee: number
-  peRatioHigh: number
-  peRatioLow: number
-  EPSSurpriseDollar: number
-  EPSSurprisePercent: number
-  returnOnAssets: number
-  returnOnCapital: number
-  profitMargin: number
-  priceToSales: number
-  priceToBook: number
+  avg10Volume: number
+  avg30Volume: number
   day200MovingAvg: number
   day50MovingAvg: number
-  institutionPercent: number
-  insiderPercent: number
-  shortRatio: number
+  employees: number
+  ttmEPS: number
+  ttmDividendRate: number
+  dividendYield: number
+  nextDividendDate: string
+  exDividendDate: string
+  nextEarningsDate: string
+  peRatio: number
+  beta: number
+  maxChangePercent: number
   year5ChangePercent: number
   year2ChangePercent: number
   year1ChangePercent: number
@@ -221,6 +267,7 @@ export interface KeyStatsResponse {
   month6ChangePercent: number
   month3ChangePercent: number
   month1ChangePercent: number
+  day30ChangePercent: number
   day5ChangePercent: number
 }
 
@@ -231,11 +278,15 @@ export interface Previous {
   high: number
   low: number
   close: number
+  uOpen: number
+  uHigh: number
+  uLow: number
+  uClose: number
   volume: number
-  unadjustedVolume: number
+  uVolume: number
   change: number
   changePercent: number
-  vwap: number
+  changeOverTime: number
 }
 
 export interface PreviousMarket {
@@ -247,13 +298,14 @@ export type PreviousResponse = Previous | PreviousMarket
 export interface Earning {
   actualEPS: number
   consensusEPS: number
-  estimatedEPS: number
   announceTime: string // TODO: API docs don't mention this, but this can probably be an enum
   numberOfEstimates: number
   EPSSurpriseDollar: number
   EPSReportDate: string
   fiscalPeriod: string
   fiscalEndDate: string
+  yearAgo: number
+  yearAgoChangePercent: number
 }
 
 export interface EarningsResponse {
@@ -261,7 +313,20 @@ export interface EarningsResponse {
   earnings: Earning[]
 }
 
-export type DividendRange = '5y' | '2y' | '1y' | 'ytd' | '6m' | '3m' | '1m'
+export interface EarningsEstimate {
+  consensusEPS: number
+  numberOfEstimates: number
+  fiscalPeriod: string
+  fiscalEndDate: string
+  reportDate: string
+}
+
+export interface EarningsEstimateResponse {
+  symbol: string
+  estimates: EarningsEstimate[]
+}
+
+export type DividendRange = '5y' | '2y' | '1y' | 'ytd' | '6m' | '3m' | '1m' | 'next'
 
 export interface Dividend {
   exDate: string
@@ -271,10 +336,48 @@ export interface Dividend {
   amount: number
   flag: string // TODO: API docs don't mention this, but this can probably be an enum
   type: 'Dividend income' | 'Interest income' | 'Stock dividend' |
-        'Short term capital gain' | 'Medium term capital gain' |
-        'Long term capital gain' | 'Unspecified term capital gain'
+  'Short term capital gain' | 'Medium term capital gain' |
+  'Long term capital gain' | 'Unspecified term capital gain'
   qualified: 'P' | 'Q' | 'N' | '' | null // TODO: API Docs say null here, but we need to confirm if that ever happens
   indicated: string // TODO: API docs don't mention this, but this can probably be an enum
+}
+
+export interface RecommendationTrendsResponse {
+  consensusEndDate: number
+  consensusStartDate: number
+  corporateActionsAppliedDate: number
+  ratingBuy: number
+  ratingHold: number
+  ratingNone: number
+  ratingOverweight: number
+  ratingScaleMark: number
+  ratingSell: number
+  ratingUnderweight: number
+}
+
+export interface AdvancedStatsResponse extends KeyStatsResponse {
+  beta: number
+  totalCash: number
+  currentDebt: number
+  revenue: number
+  grossProfit: number
+  totalRevenue: number
+  EBITDA: number
+  revenuePerShare: number
+  revenuePerEmployee: number
+  debtToEquity: number
+  profitMargin: number
+  enterpriseValue: number
+  enterpriseValueToRevenue: number
+  priceToSales: number
+  priceToBook: number
+  forwardPERatio: number
+  pegRatio: number
+  peHigh: number
+  peLow: number
+  week52highDate: string
+  week52lowDate: string
+  putCallRatio: number
 }
 
 export interface DelayedQuoteResponse {
@@ -289,6 +392,8 @@ export interface DelayedQuoteResponse {
 
 export type MarketList = 'mostactive' | 'gainers' | 'losers' | 'iexvolume' | 'iexpercent'
 
+export type Collection = 'sector' | 'tag' | 'list'
+
 export interface EffectiveSpread {
   volume: number // TODO: API docs say this is a string, but it looks like it's a number
   venue: string
@@ -299,10 +404,16 @@ export interface EffectiveSpread {
 }
 
 export interface VolumeByVenue {
-volume: number
-venue: string
-venueName: string
-date: string | null
-marketPercent: number
-avgMarketPercent: number
+  volume: number
+  venue: string
+  venueName: string
+  date: string | null
+  marketPercent: number
+  avgMarketPercent: number
+}
+
+export interface Classification {
+  industry: string
+  sector: string
+  tags: string[]
 }
