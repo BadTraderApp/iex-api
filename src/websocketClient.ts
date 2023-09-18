@@ -1,3 +1,4 @@
+// tslint:disable:completed-docs
 import { DEEP_CHANNELS, TopsResponse } from './apis/marketData'
 import { DeepListener, DeepService, SystemEventListener } from './deep'
 import { TopsService } from './tops'

@@ -20,17 +20,22 @@
       "newline-per-chained-call": false,
       "no-any": false,
       "no-default-export": false,
+      "no-default-import": false,
+      "no-for-in": false,
       "no-inferrable-types": true,
       "no-null-keyword": false,
       "object-literal-sort-keys": false,
+      "ordered-imports": false,
       "promise-function-async": false,
       "quotemark": [true, "single", "avoid-escape", "avoid-template"],
       "semicolon": [true, "never"],
       "strict-boolean-expressions": [true, "allow-undefined-union", "allow-boolean-or-undefined"],
+      "strict-comparisons": false,
       "trailing-comma": [true, {"multiline": "never", "singleline": "never", "esSpecCompliant": true }],
       "triple-equals": [true, "allow-null-check"],
       "type-literal-delimiter": false,
-      "typedef": false
+      "typedef": false,
+      "unnecessary-else": false
     },
     "rulesDirectory": []
 }

@@ -1,5 +1,5 @@
 {
-  "name": "iex-api",
+  "name": "@badtraderapp/iex-api",
   "version": "0.9.0",
   "description": "Unofficial SDK for using the IEX API.",
   "main": "index.js",
@@ -18,7 +18,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bilalq/iex-api.git"
+    "url": "git+https://github.com/BadTraderApp/iex-api.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
   },
   "keywords": [
     "iex",
@@ -31,17 +34,15 @@
   "author": "Bilal Quadri",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/bilalq/iex-api/issues"
+    "url": "https://github.com/BadTraderApp/iex-api/issues"
   },
-  "homepage": "https://github.com/bilalq/iex-api#readme",
+  "homepage": "https://github.com/BadTraderApp/iex-api#readme",
   "dependencies": {
-    "moment": "^2.25.1",
-    "moment-timezone": "^0.5.6"
+    "moment": "^2.29.4",
+    "moment-timezone": "^0.5.43"
   },
   "devDependencies": {
     "@types/jest": "^21.1.8",
-    "@types/moment-timezone": "^0.5.6",
-    "@types/npm": "^2.0.29",
     "fetch-ponyfill": "^4.1.0",
     "jest": "^21.2.1",
     "ts-jest": "^21.2.4",
